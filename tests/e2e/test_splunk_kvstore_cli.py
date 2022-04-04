@@ -23,4 +23,4 @@ def test_kv_get_config_when_no_collection():
     )
     result = splunk_kvstore_cli.get_config("search", "default")
     parsed = json.loads(result)
-    assert len(parsed) == 1
+    assert len(parsed) == 0
