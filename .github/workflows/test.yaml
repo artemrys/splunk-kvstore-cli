@@ -25,4 +25,4 @@ jobs:
         run: |
           docker run -d -p 8089:8089 -e "SPLUNK_START_ARGS=--accept-license" -e "SPLUNK_PASSWORD=$SPLUNK_PASSWORD" --name splunk splunk/splunk:${{ matrix.splunk-version }}
           until docker logs splunk | grep "Ansible playbook complete" ; do sleep 1; done
-      - run: SPLUNK_PASSWORD=$SPLUNK_PASSWORD poetry run pytest tests/e2e
+      - run: SPLUNK_PASSWORD=$SPLUNK_PASSWORD pytest tests/e2e
