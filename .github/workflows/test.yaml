@@ -1,0 +1,28 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches: [main]
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    env:
+      SPLUNK_PASSWORD: Chang3d!
+    strategy:
+      matrix:
+        splunk-version: ["8.1", "8.2"]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.9"
+      - run: pip install -r requirements-dev.txt
+      - name: Run Splunk
+        run: |
+          docker run -d -p 8089:8089 -e "SPLUNK_START_ARGS=--accept-license" -e "SPLUNK_PASSWORD=$SPLUNK_PASSWORD" --name splunk splunk/splunk:${{ matrix.splunk-version }}
+          until docker logs splunk | grep "Ansible playbook complete" ; do sleep 1; done
+      - run: SPLUNK_PASSWORD=$SPLUNK_PASSWORD pytest tests/e2e
