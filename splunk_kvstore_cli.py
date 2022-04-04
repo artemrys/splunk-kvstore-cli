@@ -1,14 +1,15 @@
 import argparse
 import base64
 import json
+import os
 import ssl
+import urllib.parse
 import urllib.request
+from typing import List, Optional, Sequence
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
-
-BASE_URL = "https://localhost:8089/servicesNS/nobody"
 
 
 def _encode_username_password(username_password: str) -> str:
@@ -17,10 +18,25 @@ def _encode_username_password(username_password: str) -> str:
     return f"Basic {basic_auth}"
 
 
-def get_config(username_password: str, app: str, mode: str) -> str:
+def _get_credentials() -> List[str]:
+    credentials_path = os.path.join(os.path.expanduser("~"), ".splunk_kvstore_creds")
+    if os.path.exists(credentials_path):
+        with open(credentials_path) as f:
+            content = f.read()
+            credentials = content.strip()
+            return credentials.split(";")
+    return []
+
+
+def get_config(app: str, mode: str) -> str:
+    host, username_password = _get_credentials()
+    url_params = {
+        "output_mode": "json",
+    }
     response = urllib.request.urlopen(
         urllib.request.Request(
-            f"{BASE_URL}/{app}/storage/collections/config?output_mode=json",
+            f"{host}/servicesNS/nobody/{app}/storage/collections/config",
+            urllib.parse.urlencode(url_params).encode("utf-8"),
             method="GET",
             headers={
                 "Authorization": _encode_username_password(username_password),
@@ -44,10 +60,11 @@ def get_config(username_password: str, app: str, mode: str) -> str:
     return json.dumps(entries)
 
 
-def get_data(username_password: str, app: str, collection: str) -> str:
+def get_data(app: str, collection: str) -> str:
+    host, username_password = _get_credentials()
     response = urllib.request.urlopen(
         urllib.request.Request(
-            f"{BASE_URL}/{app}/storage/collections/data/{collection}",
+            f"{host}/servicesNS/nobody/{app}/storage/collections/data/{collection}",
             method="GET",
             headers={
                 "Authorization": _encode_username_password(username_password),
@@ -59,22 +76,40 @@ def get_data(username_password: str, app: str, collection: str) -> str:
     return json.dumps(response_json)
 
 
-def main():
+def login(username_password: str, host: str) -> None:
+    credentials_path = os.path.join(os.path.expanduser("~"), ".splunk_kvstore_creds")
+    with open(credentials_path, "w") as f:
+        f.write(f"{host};{username_password}\n")
+    print(f"Successfully saved credentials to {credentials_path}")
+
+
+def main(argv: Optional[Sequence[str]] = None):
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command")
-    config_parser = subparsers.add_parser("config")
-    config_parser.add_argument("-u", required=True)
-    config_parser.add_argument("-a", "--app", required=True)
-    config_parser.add_argument("-m", "--mode", default="default")
-    data_parser = subparsers.add_parser("data")
-    data_parser.add_argument("-u", required=True)
-    data_parser.add_argument("-a", "--app", required=True)
-    data_parser.add_argument("-c", "--collection", required=True)
-    args = parser.parse_args()
-    if args.command == "config":
-        print(get_config(args.u, args.app, args.mode))
-    elif args.command == "data":
-        print(get_data(args.u, args.app, args.collection))
+    login_parser = subparsers.add_parser("login")
+    login_parser.add_argument(
+        "-c",
+        "--creds",
+        required=True,
+        help="Username and password, in `username:password` format",
+    )
+    login_parser.add_argument(
+        "--host",
+        default="https://localhost:8089",
+        help="Scheme, host and port, in `scheme://host:port` format",
+    )
+    get_parser = subparsers.add_parser("get")
+    get_parser.add_argument("app_collection")
+    get_parser.add_argument("-m", "--mode", default="default")
+    args = parser.parse_args(argv)
+    if args.command == "login":
+        login(args.creds, args.host)
+    elif args.command == "get":
+        if ":" in args.app_collection:
+            app, collection = args.app_collection.split(":")
+            print(get_data(app, collection))
+        else:
+            print(get_config(args.app_collection, args.mode))
 
 
 if __name__ == "__main__":
