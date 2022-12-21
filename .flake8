@@ -1,2 +1,4 @@
 [flake8]
 max-line-length = 88
+per-file-ignores =
+    tests/unit/test_splunk_kvstore_cli.py:E501
