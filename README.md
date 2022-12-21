@@ -6,7 +6,7 @@ This tool is intended for local development, when developing something for Splun
 
 ## Installation
 
-`pip install git+https://github.com/artemrys/splunk-kvstore-cli`
+`pip install splunk-kvstore-cli`
 
 ## Examples
 
