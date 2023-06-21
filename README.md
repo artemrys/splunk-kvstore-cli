@@ -17,3 +17,7 @@ All the examples below use default value of `--host` parameter which is `https:/
 * `kv get -a addon_name -u user:password` - prints data about all the collections associated with the add-on `addon_name`
 * `kv get -a addon_name -u user:password -m full` - prints **ALL** data about all the collections associated with the add-on `addon_name`
 * `kv get -a addon_name -c collection_name -u user:password` - prints data from the particular collection `collection_name`
+
+### Disclaimer
+
+This is not an official Splunk product.
