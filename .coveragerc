@@ -1,0 +1,5 @@
+[run]
+plugins = covdefaults
+
+[report]
+fail_under = 97
