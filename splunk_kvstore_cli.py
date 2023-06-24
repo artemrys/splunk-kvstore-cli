@@ -64,7 +64,7 @@ def get_data(creds: str, host: str, addon_name: str, collection: str) -> str:
     return json.dumps(response_json, indent=2)
 
 
-def main(argv: Optional[Sequence[str]] = None):
+def main(argv: Optional[Sequence[str]] = None) -> None:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command")
     get_parser = subparsers.add_parser("get")
