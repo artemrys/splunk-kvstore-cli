@@ -22,7 +22,7 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
       - run: python -m build
         if: ${{ steps.release.outputs.release_created }}
-      - uses: pypa/gh-action-pypi-publish@v1.8.7
+      - uses: pypa/gh-action-pypi-publish@v1.8.8
         if: ${{ steps.release.outputs.release_created }}
         with:
           user: __token__
