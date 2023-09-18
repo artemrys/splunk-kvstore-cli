@@ -12,7 +12,7 @@ jobs:
         with:
           release-type: python
           package-name: splunk_kvstore_cli
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         if: ${{ steps.release.outputs.release_created }}
       - uses: actions/setup-python@v4
         if: ${{ steps.release.outputs.release_created }}
