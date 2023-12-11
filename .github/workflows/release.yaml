@@ -14,7 +14,7 @@ jobs:
           package-name: splunk_kvstore_cli
       - uses: actions/checkout@v4
         if: ${{ steps.release.outputs.release_created }}
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         if: ${{ steps.release.outputs.release_created }}
         with:
           python-version: "3.9"
